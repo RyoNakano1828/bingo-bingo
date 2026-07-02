@@ -1,0 +1,86 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  status      String    @default("draft") // draft | active | finished
+  adminToken  String    @unique @default(cuid())
+  joinCode    String    @unique
+  excludeSelf Boolean   @default(true)
+  startedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  users     User[]
+  questions Question[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  eventId   String
+  name      String
+  iconUrl   String?
+  profile   String?
+  groupId   String?
+  createdAt DateTime @default(now())
+
+  event         Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  answers       UserAnswer[]
+  bingoCard     BingoCard?
+  targetedCells BingoCell[]  @relation("TargetUser")
+}
+
+model Question {
+  id      String @id @default(cuid())
+  eventId String
+  text    String
+
+  event   Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  answers UserAnswer[]
+  cells   BingoCell[]
+}
+
+model UserAnswer {
+  id         String @id @default(cuid())
+  userId     String
+  questionId String
+  answer     String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, questionId])
+}
+
+model BingoCard {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  bingoCount     Int       @default(0)
+  firstBingoAt   DateTime?
+  completedLines String    @default("[]")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cells BingoCell[]
+}
+
+model BingoCell {
+  id           String  @id @default(cuid())
+  cardId       String
+  position     Int
+  targetUserId String
+  questionId   String
+  opened       Boolean @default(false)
+
+  card       BingoCard @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  targetUser User      @relation("TargetUser", fields: [targetUserId], references: [id])
+  question   Question  @relation(fields: [questionId], references: [id])
+
+  @@unique([cardId, position])
+  @@unique([cardId, targetUserId])
+}
