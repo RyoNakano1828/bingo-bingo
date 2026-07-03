@@ -57,20 +57,36 @@ http://localhost:3000 でアクセスできます。
 
 ## Vercel デプロイ
 
-**Settings → Environment Variables** に以下を設定:
+### 1. マイグレーション（初回・スキーマ変更時）
 
-| 変数 | 値 |
-|------|-----|
-| `DATABASE_URL` | Supabase Transaction pooler（6543） |
-| `DIRECT_URL` | Supabase Direct connection（5432） |
+Vercel のビルド環境から Supabase の Direct 接続（5432）に届かないため、**マイグレーションはローカルで実行**します。
 
-**Build Command**（デフォルトまたは明示）:
+```bash
+npm run db:migrate
+```
+
+（`.env` に `DIRECT_URL` が必要）
+
+### 2. 環境変数
+
+**Settings → Environment Variables**（Production / Preview 両方）:
+
+| 変数 | 必須 | 値 |
+|------|------|-----|
+| `DATABASE_URL` | ✅ | Supabase **Transaction pooler**（port `6543`）+ `?pgbouncer=true` |
+| `DIRECT_URL` | ローカルのみ | Vercel には **不要**（ビルドで使いません） |
+
+### 3. Build Command
 
 ```bash
 npm run build
 ```
 
-`build` スクリプト内で `prisma generate` → `prisma migrate deploy` → `next build` が実行されます。
+`prisma generate` → `next build` のみ実行します（ビルド中に DB 接続しません）。
+
+### 4. デプロイ後
+
+ローカルで `npm run db:init` 済みなら、Supabase 上にテーブルとデモデータがあります。未実行の場合はローカルから `npm run db:migrate` と `npm run db:seed` を実行してください。
 
 ## デモデータ（最初から入っています）
 
