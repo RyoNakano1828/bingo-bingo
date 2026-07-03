@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { generateJoinCode } from "@/lib/game";
+import { withApi } from "@/lib/with-api";
 
-export async function POST(request: NextRequest) {
+export const POST = withApi(async (request: NextRequest) => {
   const body = await request.json();
   const title = body.title?.trim();
 
@@ -32,9 +33,9 @@ export async function POST(request: NextRequest) {
     adminToken: event.adminToken,
     status: event.status,
   });
-}
+});
 
-export async function GET(request: NextRequest) {
+export const GET = withApi(async (request: NextRequest) => {
   const joinCode = request.nextUrl.searchParams.get("joinCode");
 
   if (joinCode) {
@@ -51,4 +52,4 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json({ error: "joinCode が必要です" }, { status: 400 });
-}
+});

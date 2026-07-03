@@ -35,19 +35,43 @@ export async function apiFetch<T>(
       headers,
     });
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || "リクエストに失敗しました");
+    const text = await response.text();
+    let data: { error?: string } = {};
+    if (text) {
+      try {
+        data = JSON.parse(text) as { error?: string };
+      } catch {
+        if (!response.ok) {
+          throw new Error(
+            `サーバーエラー (${response.status}): 応答を読み取れませんでした`
+          );
+        }
+      }
     }
+
+    if (!response.ok) {
+      throw new Error(
+        data.error ||
+          (response.status === 500
+            ? "サーバーに接続できません。DATABASE_URL の設定を確認してください。"
+            : "リクエストに失敗しました")
+      );
+    }
+
+    if (!text) {
+      throw new Error("サーバーから空の応答が返されました");
+    }
+
+    const parsed = JSON.parse(text);
 
     if (cacheKey && cacheTtlMs > 0) {
       responseCache.set(cacheKey, {
-        data,
+        data: parsed,
         expiresAt: Date.now() + cacheTtlMs,
       });
     }
 
-    return data as T;
+    return parsed as T;
   })();
 
   if (cacheKey && cacheTtlMs > 0) {

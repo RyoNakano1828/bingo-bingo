@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminToken, getUserId, verifyAdmin } from "@/lib/auth";
+import { getAdminToken, verifyAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { withApi } from "@/lib/with-api";
 
 type RouteParams = { params: Promise<{ eventId: string }> };
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export const GET = withApi(async (request: NextRequest, { params }: RouteParams) => {
   const { eventId } = await params;
   const token = getAdminToken(request);
   const isAdmin = !!(await verifyAdmin(eventId, token));
@@ -31,9 +32,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       answersComplete: user._count.answers >= questionCount && questionCount > 0,
     }))
   );
-}
+});
 
-export async function POST(request: NextRequest, { params }: RouteParams) {
+export const POST = withApi(async (request: NextRequest, { params }: RouteParams) => {
   const { eventId } = await params;
   const event = await prisma.event.findUnique({ where: { id: eventId } });
 
@@ -66,4 +67,4 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   });
 
   return NextResponse.json(user);
-}
+});

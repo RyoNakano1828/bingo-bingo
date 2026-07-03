@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAdminToken, verifyAdmin } from "@/lib/auth";
 import { getEventInfo } from "@/lib/event-service";
 import { prisma } from "@/lib/db";
+import { withApi } from "@/lib/with-api";
 
 type RouteParams = { params: Promise<{ eventId: string }> };
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export const GET = withApi(async (_request: NextRequest, { params }: RouteParams) => {
   const { eventId } = await params;
   const event = await getEventInfo(eventId);
 
@@ -18,9 +19,9 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       "Cache-Control": "private, max-age=5, stale-while-revalidate=30",
     },
   });
-}
+});
 
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export const PATCH = withApi(async (request: NextRequest, { params }: RouteParams) => {
   const { eventId } = await params;
   const token = getAdminToken(request);
   const event = await verifyAdmin(eventId, token);
@@ -50,4 +51,4 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   });
 
   return NextResponse.json(updated);
-}
+});
