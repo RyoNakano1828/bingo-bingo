@@ -22,10 +22,29 @@
 
 - **Next.js 16** (App Router)
 - **TypeScript**
-- **Prisma 7** + **SQLite**
+- **Prisma 7** + **Supabase (PostgreSQL)**
 - **Tailwind CSS 4**
 
 ## セットアップ
+
+### 1. Supabase プロジェクト作成
+
+1. [Supabase](https://supabase.com/) でプロジェクトを作成
+2. **Project Settings → Database → Connection string** を開く
+3. 次の 2 つをコピー:
+   - **Transaction pooler**（port `6543`）→ `DATABASE_URL`
+   - **Direct connection**（port `5432`）→ `DIRECT_URL`
+
+### 2. 環境変数
+
+`.env.example` を `.env` にコピーし、Supabase の接続文字列を設定:
+
+```env
+DATABASE_URL="postgresql://...:6543/postgres?pgbouncer=true"
+DIRECT_URL="postgresql://...:5432/postgres"
+```
+
+### 3. 起動
 
 ```bash
 npm install
@@ -35,6 +54,23 @@ npm run dev
 `npm run dev` 実行時に、マイグレーションとデモデータの投入が自動で行われます（初回のみ）。
 
 http://localhost:3000 でアクセスできます。
+
+## Vercel デプロイ
+
+**Settings → Environment Variables** に以下を設定:
+
+| 変数 | 値 |
+|------|-----|
+| `DATABASE_URL` | Supabase Transaction pooler（6543） |
+| `DIRECT_URL` | Supabase Direct connection（5432） |
+
+**Build Command**（デフォルトまたは明示）:
+
+```bash
+npm run build
+```
+
+`build` スクリプト内で `prisma generate` → `prisma migrate deploy` → `next build` が実行されます。
 
 ## デモデータ（最初から入っています）
 
@@ -99,7 +135,7 @@ npm run db:reset-demo
 
 ## データベース
 
-SQLite ファイル: `prisma/dev.db`
+Supabase（PostgreSQL）上にテーブルを作成します。
 
 主要モデル: `Event`, `User`, `Question`, `UserAnswer`, `BingoCard`, `BingoCell`
 
