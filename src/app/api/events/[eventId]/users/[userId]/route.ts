@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserId } from "@/lib/auth";
+import { normalizeIconUrl } from "@/lib/icon-url";
 import { prisma } from "@/lib/db";
 
 type RouteParams = { params: Promise<{ eventId: string; userId: string }> };
@@ -41,11 +42,24 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 
   const body = await request.json();
+
+  let iconUrl: string | null | undefined = undefined;
+  if (body.iconUrl !== undefined) {
+    try {
+      iconUrl = normalizeIconUrl(body.iconUrl);
+    } catch (err) {
+      return NextResponse.json(
+        { error: err instanceof Error ? err.message : "画像が不正です" },
+        { status: 400 }
+      );
+    }
+  }
+
   const user = await prisma.user.update({
     where: { id: userId, eventId },
     data: {
       name: body.name?.trim() || undefined,
-      iconUrl: body.iconUrl !== undefined ? body.iconUrl?.trim() || null : undefined,
+      iconUrl,
       profile: body.profile !== undefined ? body.profile?.trim() || null : undefined,
       groupId: body.groupId !== undefined ? body.groupId?.trim() || null : undefined,
     },

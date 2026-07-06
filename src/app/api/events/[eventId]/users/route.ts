@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAdminToken, verifyAdmin } from "@/lib/auth";
+import { getAdminToken, getUserId, verifyAdmin, verifyParticipant } from "@/lib/auth";
+import { normalizeIconUrl } from "@/lib/icon-url";
 import { prisma } from "@/lib/db";
 import { withApi } from "@/lib/with-api";
 
@@ -9,6 +10,8 @@ export const GET = withApi(async (request: NextRequest, { params }: RouteParams)
   const { eventId } = await params;
   const token = getAdminToken(request);
   const isAdmin = !!(await verifyAdmin(eventId, token));
+  const participant = await verifyParticipant(eventId, getUserId(request));
+  const canViewProfile = isAdmin || !!participant;
 
   const users = await prisma.user.findMany({
     where: { eventId },
@@ -25,7 +28,7 @@ export const GET = withApi(async (request: NextRequest, { params }: RouteParams)
       id: user.id,
       name: user.name,
       iconUrl: user.iconUrl,
-      profile: isAdmin ? user.profile : undefined,
+      profile: canViewProfile ? user.profile : undefined,
       groupId: user.groupId,
       answerCount: user._count.answers,
       totalQuestions: questionCount,
@@ -56,11 +59,23 @@ export const POST = withApi(async (request: NextRequest, { params }: RouteParams
     return NextResponse.json({ error: "名前は必須です" }, { status: 400 });
   }
 
+  let iconUrl: string | null = null;
+  try {
+    if (body.iconUrl !== undefined) {
+      iconUrl = normalizeIconUrl(body.iconUrl);
+    }
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "画像が不正です" },
+      { status: 400 }
+    );
+  }
+
   const user = await prisma.user.create({
     data: {
       eventId,
       name,
-      iconUrl: body.iconUrl?.trim() || null,
+      iconUrl,
       profile: body.profile?.trim() || null,
       groupId: body.groupId?.trim() || null,
     },

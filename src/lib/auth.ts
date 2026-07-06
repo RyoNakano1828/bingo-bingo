@@ -16,3 +16,10 @@ export function getAdminToken(request: NextRequest): string | null {
 export function getUserId(request: NextRequest): string | null {
   return request.headers.get("x-user-id");
 }
+
+export async function verifyParticipant(eventId: string, userId: string | null) {
+  if (!userId) return null;
+  return prisma.user.findFirst({
+    where: { id: userId, eventId },
+  });
+}

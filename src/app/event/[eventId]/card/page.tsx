@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/Button";
+import { Avatar } from "@/components/Avatar";
 import { Input } from "@/components/Input";
 import { PageShell } from "@/components/PageShell";
 import { apiFetch } from "@/lib/api-client";
@@ -153,32 +154,26 @@ export default function BingoCardPage() {
       {!card ? (
         <p className="text-slate-500">カードを読み込んでいます...</p>
       ) : (
-        <div className="mx-auto grid max-w-md grid-cols-4 gap-2">
+        <div className="mx-auto grid max-w-lg grid-cols-4 gap-2.5">
           {card.cells.map((cell) => (
             <button
               key={cell.id}
               type="button"
               onClick={() => handleCellTap(cell)}
               disabled={cell.opened}
-              className={`flex aspect-square flex-col items-center justify-center rounded-xl border-2 p-1 text-center text-xs transition ${
+              className={`flex aspect-square flex-col items-center justify-center rounded-xl border-2 p-1.5 text-center transition ${
                 cell.opened
                   ? "border-emerald-400 bg-emerald-50 text-emerald-800"
                   : "border-indigo-200 bg-white hover:border-indigo-400 hover:bg-indigo-50 active:scale-95"
               }`}
             >
-              {cell.targetUser.iconUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={cell.targetUser.iconUrl}
-                  alt=""
-                  className="mb-1 h-8 w-8 rounded-full object-cover"
-                />
-              ) : (
-                <span className="mb-1 flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-sm">
-                  {cell.targetUser.name.charAt(0)}
-                </span>
-              )}
-              <span className="line-clamp-2 font-medium leading-tight">
+              <Avatar
+                name={cell.targetUser.name}
+                iconUrl={cell.targetUser.iconUrl}
+                size="lg"
+                className="mb-0.5"
+              />
+              <span className="line-clamp-1 text-[10px] font-medium leading-tight">
                 {cell.targetUser.name}
               </span>
               {cell.opened && <span className="mt-0.5 text-[10px]">✓</span>}

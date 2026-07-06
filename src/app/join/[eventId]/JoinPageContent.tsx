@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/Button";
+import { ImageUpload } from "@/components/ImageUpload";
 import { Input } from "@/components/Input";
 import { Textarea } from "@/components/Textarea";
 import { PageShell } from "@/components/PageShell";
@@ -102,11 +103,10 @@ export default function JoinPageContent() {
           required
           disabled={event?.status !== "draft"}
         />
-        <Input
-          label="アイコンURL（任意）"
-          placeholder="https://..."
+        <ImageUpload
           value={iconUrl}
-          onChange={(e) => setIconUrl(e.target.value)}
+          onChange={setIconUrl}
+          name={name || "?"}
           disabled={event?.status !== "draft"}
         />
         <Textarea
