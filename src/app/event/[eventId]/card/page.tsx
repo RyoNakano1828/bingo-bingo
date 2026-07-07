@@ -207,7 +207,7 @@ export default function BingoCardPage() {
               {feedback && (
                 <p
                   className={`rounded-lg px-3 py-2 text-sm ${
-                    feedback.includes("正解")
+                    feedback.startsWith("正解")
                       ? "bg-emerald-50 text-emerald-700"
                       : "bg-red-50 text-red-600"
                   }`}

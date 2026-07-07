@@ -102,8 +102,14 @@ npm run build
 デモデータを作り直す場合:
 
 ```bash
+# 全データ削除 → マイグレーション再適用 → デモ seed（DB 丸ごとリセット）
+npm run db:reset
+
+# データのみ削除してデモ seed し直す（スキーマはそのまま）
 npm run db:reset-demo
 ```
+
+`db:reset` は **接続先 DB の全データを削除** します。`.env` の `DIRECT_URL` が必要です。
 
 ## 使い方
 

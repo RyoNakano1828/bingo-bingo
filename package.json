@@ -10,6 +10,7 @@
     "postinstall": "prisma generate",
     "db:init": "tsx scripts/init-db.ts",
     "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force",
     "db:reset-demo": "tsx prisma/seed.ts --force",
     "db:migrate": "prisma migrate deploy",
     "db:test-connection": "tsx scripts/test-db-connection.ts"
